@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Podcast Player</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    li:hover {
+      background: #eaeaea;
+    }
+
+    .player {
+      margin-top: 20px;
+    }
+
+    .controls button {
+      margin: 5px;
+      padding: 10px;
+    }
+
+    pre {
+      background: #f0f0f0;
+      padding: 10px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>My Podcasts</h1>
+    <input type="text" id="search" placeholder="Search podcasts..." />
+    <ul id="episodeList"></ul>
+
+    <div class="player">
+      <h2 id="nowPlaying">Select a podcast</h2>
+      <audio id="audioPlayer" controls></audio>
+      <div class="controls">
+        <button onclick="skip(-15)">« 15s</button>
+        <button onclick="togglePlay()">Play/Pause</button>
+        <button onclick="skip(30)">30s »</button>
+        <button onclick="prev()">Prev</button>
+        <button onclick="next()">Next</button>
+      </div>
+      <pre id="transcript"></pre>
+    </div>
+  </div>
+
+  <script>
+    let currentEpisode = 0;
+    let episodes = [];
+
+    // Load episode list
+    fetch('podcasts.json')
+      .then(res => res.json())
+      .then(data => {
+        episodes = data;
+        displayEpisodes(data);
+      });
+
+    function displayEpisodes(list) {
+      const ul = document.getElementById("episodeList");
+      ul.innerHTML = "";
+      list.forEach((ep, index) => {
+        const li = document.createElement("li");
+        li.textContent = ep.title;
+        li.onclick = () => loadEpisode(index);
+        ul.appendChild(li);
+      });
+    }
+
+    function loadEpisode(index) {
+      currentEpisode = index;
+      const ep = episodes[index];
+      document.getElementById("nowPlaying").textContent = ep.title;
+      const audio = document.getElementById("audioPlayer");
+      audio.src = ep.file;
+      audio.play();
+      fetch(ep.transcript)
+        .then(res => res.text())
+        .then(text => document.getElementById("transcript").textContent = text)
+        .catch(() => document.getElementById("transcript").textContent = "Transcript not available.");
+    }
+
+    function togglePlay() {
+      const audio = document.getElementById("audioPlayer");
+      if (audio.paused) audio.play();
+      else audio.pause();
+    }
+
+    function skip(seconds) {
+      const audio = document.getElementById("audioPlayer");
+      audio.currentTime += seconds;
+    }
+
+    function next() {
+      if (currentEpisode < episodes.length - 1) loadEpisode(currentEpisode + 1);
+    }
+
+    function prev() {
+      if (currentEpisode > 0) loadEpisode(currentEpisode - 1);
+    }
+
+    document.getElementById("search").addEventListener("input", function () {
+      const term = this.value.toLowerCase();
+      const filtered = episodes.filter(ep =>
+        ep.title.toLowerCase().includes(term) ||
+        (ep.description && ep.description.toLowerCase().includes(term))
+      );
+      displayEpisodes(filtered);
+    });
+  </script>
+</body>
+</html>
