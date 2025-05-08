@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Episode 1 - AI Agents",
+    "file": "podcasts/episode1.mp3",
+    "transcript": "transcripts/episode1.txt",
+    "description": "Intro to the podcast series."
+  },
+  {
+    "title": "Episode 2 - Deep Dive",
+    "file": "podcasts/episode2.mp3",
+    "transcript": "transcripts/episode2.txt",
+    "description": "Diving deep into topics."
+  }
+]
